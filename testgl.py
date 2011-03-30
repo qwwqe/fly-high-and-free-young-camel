@@ -144,8 +144,10 @@ while running:
                 e.vel = (e.vel[0], -e.vel[1])
 
     
-
+    # check and resolve collisions
     collision.checkObjects()
+
+    collision.sorttime()
 
     # draw shit
     glMatrixMode(GL_PROJECTION)

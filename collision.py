@@ -20,6 +20,14 @@ from definitions import *
 
 # BIG NOTE: i have a hunch that integration would be handy to know if angular collisions come into play
 
+class Collision:
+    events = []  # unfiltered and possibly sorted events
+    fevents = [] # filtered events. WAIT. HOW CAN YOU FILTER WITHOUT KNOWING HOW 2 ACT?
+    
+# sort events by time of collision
+def sorttime():
+    Collision.events.sort(key = lambda t: t[2][2]) # sort by time
+
 def _collide(e1, e2):
     # orthogonally project the polygons onto the normal of each face. if all intersect,
     # the polygons intersect
@@ -153,7 +161,32 @@ def _collide(e1, e2):
                 #    step = (axis[1] - minp[0] + maxp[0]) / (ae.vel[0] - be.vel[0])
                 #    print "\t", step
                 #    if 0 <= step < minstep:
-                #        minstep = step
+                #        minstep = step 
+                #          N7NN                          
+                #       ~N77777D.                        
+                #      .D77777777..                      
+                #      8777777777$.                      
+                #     ,7$7777777777N.                    
+                #     NONNNND7777778$NNND...             
+                #    .ONNNN.ND777M8$7777777N..           
+                #     NNN===++NIN777777777777M.          
+                #     N=======N7777777777777777N         
+                #   .D$N=+===ZN==777===I~$7777777$NNNN.  
+                #   N$ND=+===+N7777=877N777777777777777N.
+                #   .O==++==+D7?=7=+777N7777777777777777.
+                #    .$NNNDNN77?=7==77N+===+?N777N777777+
+                #   D7777777777?=77=$7D+++=====NO7777777.
+                # .+777777N7777?=777=I:::====++N7777777D.
+                # .777777N7777777777NNN=====+NN7777777M..
+                # N777777D777777777N.  ..NNNNNNN777777.  
+                #.7777777N77777777N.    8N7777ZN777777N. 
+                #NZ777777D77777777        .NN777N77777$N 
+                #D$NO78NN777777777.     .8==N7?+NN77$7DM.
+                #M==N=MDN$777777N       N~?N=+N=I=IZ+++?.
+                #+=+N+N+=+N77Z7N.         .ON. N+==++NN  
+                #.....N=D+==+N             ...  .D.NN.   
+                #     .NN+==+N                           
+                #        ...:   
                 denom = (axis[0] * (ae.vel[0] - be.vel[0])) + (axis[1] * (ae.vel[1] - be.vel[1]))
                 if denom:  
                     # "eggs"-planation: the magnitude of the step factor is the parameter value that brings two objects from different points on the
@@ -176,12 +209,16 @@ def _collide(e1, e2):
 #        print "\tmin1:", min1, "max2:", max2, "min2:", min2, "max1:", max1
 #        print "\tmin1:", min1p, "max2:", max2p, "min2:", min2p, "max1:", max1p
 
+    if col:
+        minstep = 0
     return (col, colfuture, minstep)
 
 def checkObjects():
     flagsc = {} # cells flagged for revision
     flagso = [] # objects flagged for revision
-    
+
+    Collision.events = [] # reset collision events
+
     for c in cell.Grid.dcells:
         objlist = cell.Grid.dcells[c] #  + flagsc[c]
         if len(objlist) < 2: # skip if single-object cell
@@ -209,28 +246,30 @@ def checkObjects():
                     j -= 1 
                     continue
             
-                c = _collide(objlist[i], objlist[j])
+                col = _collide(objlist[i], objlist[j])
+                if col[0] or col[1]:
+                    Collision.events.append((objlist[i], objlist[j], col))
                 
                 # resolve collisions
-                if c[0] or c[1]:
-                    if isinstance(objlist[i], entity.entBullet) or isinstance(objlist[j], entity.entBullet):  # bullets
-                        if isinstance(objlist[i], entity.entBullet) and objlist[i].owner != objlist[j]:
-                            print "uh oh"
-                            objlist[j].health -= DMG_BULLET
-                            objlist[i].delete()
-                            i -= 2              # iterating down the list, so decrementing i brings us two elements down the old list, but one element down the new one.
-                            continue            # in this case the root of the iteration is being deleted, so we need to move two down the new one
-                        elif isinstance(objlist[j], entity.entBullet) and objlist[j].owner != objlist[i]:
-                            print "fooey"
-                            objlist[i].health -= DMG_BULLET
-                            objlist[j].delete()
-                            i -= 1
-                
+#                if c[0] or c[1]:
+#                    # bullets
+#                    if isinstance(objlist[i], entity.entBullet) or isinstance(objlist[j], entity.entBullet):  # bullets
+#                        if isinstance(objlist[i], entity.entBullet) and objlist[i].owner != objlist[j]:
+#                            print "uh oh"
+#                            objlist[j].health -= DMG_BULLET
+#                            objlist[i].delete()
+#                            i -= 2              # iterating down the list, so decrementing i brings us two elements down the old list, but one element down the new one.
+#                            j = i - 1           # in this case the root of the iteration is being deleted, so we need to move two down the new one
+#                            continue
+#                        elif isinstance(objlist[j], entity.entBullet) and objlist[j].owner != objlist[i]:
+#                            print "fooey"
+#                            objlist[i].health -= DMG_BULLET
+#                            objlist[j].delete()
+#                            i -= 1
 #                if c[0]:
 #                    print "collision: {}({}) {}({})" .format(objlist[i], objlist[i].pos, objlist[j], objlist[j].pos)
 #                elif c[1]:
 #                    print "collision ({} steps): {} {}" .format(c[2], objlist[i], objlist[j])
 #                    
-                j -= 1
-            #_collide(objlist[i], 
+                j -= 1 
             i -= 1
