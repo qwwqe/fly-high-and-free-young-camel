@@ -214,13 +214,14 @@ def checkObjects():
                 # resolve collisions
                 if c[0] or c[1]:
                     if isinstance(objlist[i], entity.entBullet) or isinstance(objlist[j], entity.entBullet):  # bullets
-                        print "i: {}, len(objlist): {}" .format(i, len(objlist))
-                        if isinstance(objlist[i], entity.entBullet):
+                        if isinstance(objlist[i], entity.entBullet) and objlist[i].owner != objlist[j]:
+                            print "uh oh"
                             objlist[j].health -= DMG_BULLET
                             objlist[i].delete()
                             i -= 2              # iterating down the list, so decrementing i brings us two elements down the old list, but one element down the new one.
                             continue            # in this case the root of the iteration is being deleted, so we need to move two down the new one
-                        else:
+                        elif isinstance(objlist[j], entity.entBullet) and objlist[j].owner != objlist[i]:
+                            print "fooey"
                             objlist[i].health -= DMG_BULLET
                             objlist[j].delete()
                             i -= 1

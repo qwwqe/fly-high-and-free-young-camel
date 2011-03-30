@@ -21,10 +21,12 @@ class Entity:
 
     # we need cells, collision stuff, etc
     def __init__(self, pos = (0, 0), rot = 0, vel = (0, 0), size = None, \
-                ctlfunc = None, interact = True, player = False, sprite = None, colour = (255, 255, 255), health = 100):
+                ctlfunc = None, interact = True, player = False, sprite = None, colour = (255, 255, 255), health = 100, owner = None):
         self.age = 0
         self.expiry = -1
         self.health = health
+        
+        self.owner = owner
     
         self.pos = pos # centre
         self.rot = rot
@@ -120,10 +122,12 @@ class Entity:
 
 # primary objects
 class entPlane(Entity):
-    def __init__(self, pos, rot = 0, vel = (0, 0), player = False, sprite = None, size = None, expiry = -1, interact = True, health = HEALTH_PLANE):
+    def __init__(self, pos, rot = 0, vel = (0, 0), player = False, sprite = None, size = None, expiry = -1, interact = True, health = HEALTH_PLANE, owner = None):
         self.age = 0
         self.expiry = expiry
         self.health = health
+
+        self.owner = owner
 
         self.pos = pos
 
