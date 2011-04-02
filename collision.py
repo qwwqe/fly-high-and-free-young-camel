@@ -90,6 +90,8 @@ def _collide(e1, e2):
                 tx = (minxe.pos[0] - maxxe.pos[0]) / (maxxe.vel[0] - minxe.vel[0])
                 ty = (minye.pos[1] - maxye.pos[1]) / (maxye.vel[1] - maxye.vel[1])
 
+    # generic stuff
+
     j = 0
     while j < 2 and not aa:
         i = 0
@@ -230,6 +232,11 @@ def checkObjects():
                 
         i = len(objlist) - 1
         while i > 0:
+            # skip if non-interactive
+            if not objlist[i].interact:
+                i -= 1
+                continue
+
             # inter-cell movement flag. kind of inefficient
             #pos = objlist[i].pos
             #cells = objlist[i].cells
@@ -245,7 +252,10 @@ def checkObjects():
                 if isinstance(objlist[i], entity.entBullet) and isinstance(objlist[j], entity.entBullet): # skip bullet-bullet collision
                     j -= 1 
                     continue
-            
+                elif not objlist[j].interact: # non-interactive
+                    j -= 1
+                    continue
+
                 col = _collide(objlist[i], objlist[j])
                 if col[0] or col[1]:
                     Collision.events.append((objlist[i], objlist[j], col))

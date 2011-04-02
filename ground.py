@@ -24,16 +24,16 @@ def load_xpm(filename):
     print "whitespace character: {}" .format(white)
 
     # consider making this an array?
-    heightmap = []
-    seq = []
+    heightmap = [] # why doesn't `heightmap = [[]] * w` work?
+    seq = [] # why doesn't `seq = [False] * w` work?! WHAWTHTHTHADAIHOJADFOJIAFDJIO
 
     # init shit
     i = 0
     while i < w:
         heightmap.append([])
-        seq.append(False) # [existing sequence, start of sequence]
+        seq.append(False) # existing sequence boolean
         i += 1
-
+        
     # add heights    
     i = c + h # c + 1 + (h - 1); colour offset plus the info offset brings us to the first element of pixel data. 
               # as we begin at the first element, the last element is then h - 1 steps away
@@ -62,8 +62,58 @@ def load_xpm(filename):
             j += 1
         i -= 1
         
-    return heightmap
-        
+    # could take this out and compensate in the map collision algorithm, but this cuts down on game lag.
+    # if there's a lagging pixel somewhere, or just a straight horizontal line, double it up
+    i = 0
+    while i < w:
+        if heightmap[i] and not len(heightmap[i]) % 2:
+            heightmap[i].append(heightmap[i][-1])
+        i += 1
+
+    return (((w, h), heightmap))
+
+# load entities. BOO YA
+# one entity per line, if y is omitted, it is set to -1. if u want u can set it to automatically rest on the ground or something
+# object types are found in the entity module
+# ie:
+# <x> [<y>] <OBJECT TYPE> [<supplementary module filepath>]
+def load_entmap(filename):
+    f = open(filename)
+    cube_people = f.readlines()
+    mods = [] # custom loaded modules
+    es = []
+
+    for e in cube_people:
+        if e.isspace(): # filter out whitespace lines
+            continue
+
+        e = e.split()
+
+        # x... this can be -1 for certain things, but not many. maybe change it to optional as well, like y?
+        x = int(e[0])
+        del e[0]
+ 
+        # y...
+        if e[0].isdigit(): # y value provided
+            y = float(e[0])
+            del e[0]
+        else:
+            y = -1
+
+        # entity type
+        etype = e[0]
+        del e[0]
+        if entity.types.has_key(etype): # standard object
+            es.append((etype, (x, y)))
+        else: # needs work, don't use yet
+            pass
+            #if not e[0] in mods: # load module if not already loaded
+                #...
+            #entity.types[etype] = ???
+            #es.append((etype, (x, y)))
+
+    return es
+
 # eventually make this a list of lists
 ground = [499.0, 499.0, 499.0, 499.0, 499.0, 499.0, 499.0, 499.0, 499.0,
 499.0, 499.0, 499.0, 499.0, 499.0, 499.0, 499.0, 499.0, 499.0,

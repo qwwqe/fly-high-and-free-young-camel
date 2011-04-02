@@ -7,6 +7,7 @@ import math
 import sprite as sprclass
 
 from texture import Texture
+from functools import partial
 #from control import *
 from definitions import *
 
@@ -20,7 +21,7 @@ class Entity:
     entities = []
 
     # we need cells, collision stuff, etc
-    def __init__(self, pos = (0, 0), rot = 0, vel = (0, 0), size = None, \
+    def __init__(self, pos = None, rot = 0, vel = (0, 0), size = None, \
                 ctlfunc = None, interact = True, player = False, sprite = None, colour = (255, 255, 255), health = 100, owner = None):
         self.age = 0
         self.expiry = -1
@@ -28,7 +29,7 @@ class Entity:
         
         self.owner = owner
     
-        self.pos = pos # centre
+        self.pos = pos # centre of entity. if this remains None, interact should probably remain False. god help you if it doesn't
         self.rot = rot
         self.vel = vel
 
@@ -47,16 +48,24 @@ class Entity:
         else:
             self.ctlfunc = ctlfunc
             
-        self.interact = interact # check collisions
+        # collision check flag
+        if not self.pos:
+            self.interact = False
+        else:
+            self.interact = interact
+
         self.player = player
         self.colour = colour
 
         self.cells = []
-        cell.add(self)
+        
+	if self.interact:
+            cell.add(self)
         Entity.entities.append(self)
 
     def delete(self):
-        cell.delete(self)
+        if self.interact:
+            cell.delete(self)
         Entity.entities.remove(self)
 
     # return the local vertices, described counterclockwise, of the sprite
@@ -122,7 +131,8 @@ class Entity:
 
 # primary objects
 class entPlane(Entity):
-    def __init__(self, pos, rot = 0, vel = (0, 0), player = False, sprite = None, size = None, expiry = -1, interact = True, health = HEALTH_PLANE, owner = None):
+    def __init__(self, pos, rot = 0, vel = (0, 0), player = False, sprite = None, size = None, expiry = -1, interact = True, health = HEALTH_PLANE, owner = 
+None):
         self.age = 0
         self.expiry = expiry
         self.health = health
@@ -140,6 +150,7 @@ class entPlane(Entity):
 
         self.ctlfunc = control.ctlPlane(self)
         self.player = player
+
         self.interact = interact
         
         #if not Texture.textures.has_key("OBJ_PLANE"):
@@ -157,7 +168,8 @@ class entPlane(Entity):
             self.size = size
 
         self.cells = []
-        cell.add(self)
+        if self.interact:
+            cell.add(self)
         Entity.entities.append(self)
 
 class entTank(Entity):
@@ -165,7 +177,7 @@ class entTank(Entity):
         
 # projectiles
 class entBullet(Entity):
-    def __init__(self, pos, vel = None, rot = 0, owner = None, sprite = None, size = None, expiry = EXPIRY_BULLET, health = 100, interact = True):
+    def __init__(self, pos, vel = None, rot = 0, owner = None, sprite = None, size = None, expiry = EXPIRY_BULLET, health = 100):
         self.age = 0
         self.expiry = expiry
         self.health = health
@@ -173,7 +185,8 @@ class entBullet(Entity):
         self.pos = pos
         self.rot = rot
         self.player = False
-        self.interact = interact
+
+        self.interact = True
         
         if not vel:
             if owner: self.vel = vector.component(SPD_BULLET, owner.rot)
@@ -202,3 +215,6 @@ class entBullet(Entity):
         self.cells = []
         cell.add(self)
         Entity.entities.append(self)
+
+types = { "ENTITY": Entity, "PLANE": entPlane, "PLANE_PLAYER": partial(entPlane, player = True), "BULLET": entBullet }
+#types = ["ENTITY", "PLANE", "PLANE_PLAYER", "BULLET"]
