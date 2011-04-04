@@ -34,19 +34,21 @@ glMatrixMode(GL_MODELVIEW)
 #glEnable(GL_BLEND)
 #glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-maptex = texture.mapTexture("maps/map1texture.bmp", 256)
+maptex = texture.mapTexture("maps/map1texture.bmp", 64)
 maptex.gen_lists()
 
 grid = cell.Grid((14, 10), (50, 50))
-b1 = entity.Entity(size = (40, 30), pos = (300, 100), vel = (random.uniform(-5, 5), random.uniform(-5, 5)), colour = (255, 0, 0))
-b2 = entity.Entity(size = (70, 40), pos = (500, 300), vel = (random.uniform(-5, 5), random.uniform(-5, 5)), colour = (0, 0, 255))
+#b1 = entity.Entity(size = (40, 30), pos = (300, 100), vel = (random.uniform(-5, 5), random.uniform(-5, 5)), colour = (255, 0, 0))
+#b2 = entity.Entity(size = (70, 40), pos = (500, 300), vel = (random.uniform(-5, 5), random.uniform(-5, 5)), colour = (0, 0, 255))
 #player = entity.entPlane(pos = (ground.groundlen / 2, 300), vel = (4, 2), player = True)
 player = entity.entPlane(pos = (groundmap[0][0] / 2, groundmap[0][1] / 2), vel = (4, 2), player = True)
 #player = entity.Entity(pos = (ground.groundlen / 2, 300), vel = (4, 2), sprite = sprclass.pilot, player = True)
 
+for e in ground.load_entmap("maps/map1ent.map"):
+    entity.types[e[0]](pos = e[1], vel = (random.uniform(-5, 5), random.uniform(-5, 5)))
+
 groundoffset = player.pos[0]
 
-col = collision._collide(b1, b2)
 move = True
 
 bulletcount = 0
@@ -70,9 +72,7 @@ while running:
             sys.exit()
         if event.type == pygame.KEYDOWN:
             control.Control.keyevents.append(event.key)
-            if event.key == pygame.K_c:
-                print "collision anticipated in", col[2], "frames. (", col[1], ")"                
-            elif event.key == pygame.K_p:
+            if event.key == pygame.K_p:
                 move = not move
             elif event.key == pygame.K_e:
                 if player.sprite == sprclass.plane:
@@ -134,7 +134,7 @@ while running:
                 e._move((e.pos[0], e.size[1] / 2))
                 e.vel = (e.vel[0], -e.vel[1])
 
-	    # ground collision
+	        # ground collision
             base = height
             peak = 0
             isbase = False
@@ -220,10 +220,10 @@ while running:
             glPopMatrix()
             j += 1
         i += 1
-    
+     
     glDisable(GL_TEXTURE_2D)
     glPopMatrix()
-        
+    
     for e in entity.Entity.entities:
 #        xs = list(map((lambda (x,_): x), e.vertices()))
 #        if max(xs) < groundoffset - width / 2:
@@ -240,11 +240,10 @@ while running:
             for x,y in e.vertices(): glVertex2f(x, y)
             glEnd()
         
-    pygame.display.flip()    
-
+    pygame.display.flip()
+    
     endticks = pygame.time.get_ticks()
     delay = (FDELAY - (endticks - startticks))
-#    print "processing time: {}, delay: {}, bulletcount: {}" .format((endticks - startticks), delay, bulletcount)
-    if delay < 0:
-        delay = 0
-    pygame.time.delay(int(round(delay))) # make variable based on processing time
+    #print "processing time: {}, delay: {}, bulletcount: {}" .format((endticks - startticks), delay, bulletcount)
+    if delay > 0:
+        pygame.time.delay(int(round(delay))) # make variable based on processing time

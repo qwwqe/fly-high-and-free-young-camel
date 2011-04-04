@@ -1,3 +1,5 @@
+import entity
+
 # height map indexed by x values. pairs of y values associated with a single x value
 # are assumed to delimit areas. y = 0 is the implied first value of every column.
 # how about one image for the background and one for collision?
@@ -7,7 +9,7 @@
 # #ffffff / white is nothing, all else is considered collision datum.
 # k the way this height map works:
 # 
-# 
+# oops forgot to tell you
 def load_xpm(filename):
     f = open(filename)
     xpm = ((f.read()).split('"'))[1::2]
@@ -21,7 +23,7 @@ def load_xpm(filename):
         if (l.lower()).find("#ffffff") > -1:
             white = l.split()[0]
             break
-    print "whitespace character: {}" .format(white)
+    print "whitespace character: '{}'" .format(white)
 
     # consider making this an array?
     heightmap = [] # why doesn't `heightmap = [[]] * w` work?

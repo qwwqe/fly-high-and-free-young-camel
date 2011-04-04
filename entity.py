@@ -19,6 +19,7 @@ from definitions import *
 # superclass
 class Entity:
     entities = []
+    players = []
 
     # we need cells, collision stuff, etc
     def __init__(self, pos = None, rot = 0, vel = (0, 0), size = None, \
@@ -55,6 +56,8 @@ class Entity:
             self.interact = interact
 
         self.player = player
+        if self.player:
+            Entity.players.append(self)
         self.colour = colour
 
         self.cells = []
@@ -67,6 +70,8 @@ class Entity:
         if self.interact:
             cell.delete(self)
         Entity.entities.remove(self)
+        if self.player:
+            Entity.players.remove(self)
 
     # return the local vertices, described counterclockwise, of the sprite
     # rectangle rotated about its centre and the origin
@@ -149,7 +154,10 @@ None):
         self.vel = vectors.component(vectors.length(vel), self.rot)
 
         self.ctlfunc = control.ctlPlane(self)
+        
         self.player = player
+        if self.player:
+            Entity.players.append(self)
 
         self.interact = interact
         
