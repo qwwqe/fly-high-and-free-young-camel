@@ -19,12 +19,13 @@ INT_ACCEL_PLANE  = int(float(500) / float(FPS))
 INT_DECEL_PLANE  = int(float(200) / float(FPS))
 
 SPD_BULLET = 8
-SPD_PLANE_MAX = 20
+SPD_PLANE_MAX = 14
 SPD_PLANE_MIN = 4
 
 AI_PLANE_ACT_DIST = 400 # distance within which ai planes let loose
-AI_PLANE_SLOW_DIST = 150 # distance within which ai planes will slow down. i guess also this is the "distance they keep" from opponents
+AI_PLANE_SLOW_DIST = 50 # distance within which ai planes will slow down. i guess also this is the "distance they keep" from opponents
 AI_PLANE_REV_DIST = 50 # turn around distance if passed an opponent
+#AI_PLANE_SPD_AVG = 10 # normal flight speed
 
 HEALTH_PLANE = 100
 

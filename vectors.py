@@ -1,5 +1,5 @@
 # vector calculation functions
-from math import sin, cos, asin, atan, pi, sqrt, pow
+from math import sin, cos, asin, atan2, pi, sqrt, pow
 
 # compute resultant vector from components
 def resultant(pos):
@@ -31,9 +31,9 @@ def component(len, rot, rnd = True):
 # angle a vector makes with the x axis
 def anglex(u):
     if u[0]:
-        return(round(atan(float(u[1]) / float(u[0])), 4))
+        return(round(atan2(float(u[1]), float(u[0])), 4))
     elif u[1]:
-        return(round(pi * (float(u[1]) / float(-u[1])), 4))
+        return(round(pi * cmp(u[1], 0), 4))
     else:
         return(0)
 

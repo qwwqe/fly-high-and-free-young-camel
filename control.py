@@ -114,80 +114,101 @@ class ctlPlane(Control):
                     nearplayer = p
             
             # set course
-            angle = vec.anglex((nearplayer.pos[0] - self.ent.pos[0], nearplayer.pos[1] - self.ent.pos[1]))
-            relrot = self.ent.rot % (2 * math.pi)
+            realangle = vec.anglex((nearplayer.pos[0] - self.ent.pos[0], nearplayer.pos[1] - self.ent.pos[1]))
+            if realangle < 0:
+                realangle = 2 * math.pi + realangle
+            rotangle = ROT_PLANE_INT * int(realangle / ROT_PLANE_INT)
+            
             xdist = math.fabs(nearplayer.pos[0] - self.ent.pos[0])
-            pys = [y for _, y in nearplayer.vertices()]
-            ptop = max(pys)
-            pbottom = min(pys)
+            ydist = math.fabs(nearplayer.pos[1] - self.ent.pos[1])
+            #pys = [y for _, y in nearplayer.vertices()]
+            #ptop = max(pys)
+            #pbottom = min(pys)
+            pvs = nearplayer.vertices()
+            pxs = [x for x, _ in pvs]
+            left = min(pxs)
+            right = max(pxs)
             
-            if nearplayer.pos[0] > self.ent.pos[0]: # player to the right of ai
-                if self.ent.vel[0] >= 0: # moving in the right direction, fly a straight path
-                    if relrot != 0:
-                        if relrot <= math.pi / 2:
-                            actions.append("ROT_COUNTER")
-                        else:
-                            actions.append("ROT_CLOCK")
-                    else:
-                        if xdist > AI_PLANE_SLOW_DIST:
-                            actions.append("ACCEL")
-                        elif xdist < AI_PLANE_SLOW_DIST:
-                            actions.append("DECEL")
-                            
-                    if self.ent.pos[1] > pbottom and self.ent.pos[1] < ptop and xdist <= AI_PLANE_ACT_DIST:
-                        actions.append("SHOOT_BULLET")
-                elif self.ent.vel[0] <= 0: # moving in the wrong direction, turn around
-                    actions.append("DECEL")
-                    if nearplayer.vel[0] <= 0 or xdist < AI_PLANE_REV_DIST: # fly right by that bitch, just slow down 
-                        pass
-                    elif relrot <= math.pi:
-                        actions.append("ROT_COUNTER")
-                    elif relrot != 0: # should always be true, but in case something fucks with the vel and not the rotation
-                        actions.append("ROT_CLOCK")
-            elif nearplayer.pos[0] < self.ent.pos[0]: # player to the left of ai
-                if self.ent.vel[0] <= 0: # right direction
-                    if relrot != math.pi:
-                        if relrot < math.pi:
-                            actions.append("ROT_CLOCK")
-                        else:
-                            actions.append("ROT_COUNTER")
-                    else:
-                        if xdist > AI_PLANE_SLOW_DIST:
-                            actions.append("ACCEL")
-                        elif xdist < AI_PLANE_SLOW_DIST:
-                            actions.append("DECEL")
-                            
-                        if self.ent.pos[1] > pbottom and self.ent.pos[1] < ptop and xdist <= AI_PLANE_ACT_DIST:
-                            actions.append("SHOOT_BULLET")
-                elif self.ent.vel[0] >= 0: # wrong direction
-                    actions.append("DECEL")
-                    if nearplayer.vel[0] >= 0 or xdist < AI_PLANE_REV_DIST: # flew right by him
-                        pass
-                    elif relrot < math.pi:
-                        actions.append("ROT_CLOCK")
-                    elif relrot != math.pi: # should always be true, but in case something fucks with the vel and not the rotation
-                        actions.append("ROT_COUNTER")
+            #print self.ent, self.ent.rot, rotangle
             
-            # if self.ent.rot / (2 * math.pi) > angle: 
-                # actions.append("ROT_COUNTER")
-            # elif self.ent.rot / (2 * math.pi) < angle:
-                # actions.append("ROT_CLOCK")
+            # set course. if far away, take your turns easy, otherwise, sharp is ok
+            #if xdist > AI_PLANE_ACT_DIST: # far, easy
+            cmpangle = rotangle
+            #else: # close, hard
+            #    cmpangle = realangle
                 
-            # top / bottom stuff
+            if self.ent.rot < cmpangle:
+                if cmpangle - self.ent.rot > math.pi:
+                    actions.append("ROT_COUNTER")
+                else:
+                    actions.append("ROT_CLOCK")
+            elif self.ent.rot > cmpangle:
+                if self.ent.rot - cmpangle > math.pi:
+                    actions.append("ROT_CLOCK")
+                else:
+                    actions.append("ROT_COUNTER")
                     
-            # speed the fuck up       
-            #velmag = vec.length(self.ent.vel)
-            #if velmag < SPD_PLANE_MAX and :
-            #    actions.append("ACCEL")
+            # speed up
+            if xdist <= AI_PLANE_SLOW_DIST:
+                actions.append("DECEL")
+            else:
+                actions.append("ACCEL")
+                
+            # woah, cool
+            def supercmp(f):
+                if not f and f == self.ent.vel[0]:
+                    return cmp(nearplayer.pos[0] - self.ent.pos[0], 0)
+                elif not f and f == self.ent.vel[1]:
+                    return cmp(nearplayer.pos[1] - self.ent.pos[1], 0)
+                return cmp(f, 0)
+                    
+            # blaze
+            if xdist <= AI_PLANE_ACT_DIST:
+                # facing the bastard
+                if ((supercmp(self.ent.vel[0]) == cmp(nearplayer.pos[0] - self.ent.pos[0], 0)) and \
+                    (supercmp(self.ent.vel[1]) == cmp(nearplayer.pos[1] - self.ent.pos[1], 0))):
+                # ^ test is failing on vel[0] == 0 or vel[1] == 0
+                    
+                    # b = y - mx. we take the linear equation of our ai's velocity, 
+                    # and compare its offset (b = 0) with the offset computed by
+                    # substituting the y and x values of each vertex of the player.
+                    # if these vertices lie both above (b > 0) and below (b < 0)
+                    # the line of velocity, then a bullet might intersect, so shoot, shoot
+                    #if not self.ent.vel[0]:
+                    
+                    if not self.ent.vel[0]: # up/down
+                        if self.ent.pos[0] > left and self.ent.pos[0] < right:
+                            actions.append("SHOOT_BULLET")
+                    else:
+                        slope = self.ent.vel[1] / self.ent.vel[0]
+                        b = self.ent.pos[1] - slope * self.ent.pos[0]
+                        above = below = False
+                        for v in pvs:
+                            if (v[1] - slope * v[0]) > b:
+                                above = True
+                            else:
+                                below = True
+                                
+                            if above and below:
+                                break
+                                    
+                        if above and below:
+                            actions.append("SHOOT_BULLET")
         
         # perform actions
         for a in actions:
             if a == "ROT_CLOCK" and not self.inter["ROT"]:
                 self.ent.rot += ROT_PLANE_INT
+                if self.ent.rot >= 2 * math.pi:
+                    self.ent.rot = 0
+                
                 self.ent.vel = vec.component(vec.length(self.ent.vel), self.ent.rot)
                 self.inter["ROT"] = INT_ROT_PLANE
             elif a == "ROT_COUNTER" and not self.inter["ROT"]:
                 self.ent.rot -= ROT_PLANE_INT
+                if self.ent.rot < 0:
+                    self.ent.rot = 2 * math.pi - ROT_PLANE_INT 
+                
                 self.ent.vel = vec.component(vec.length(self.ent.vel), self.ent.rot)
                 self.inter["ROT"] = INT_ROT_PLANE
             elif a == "ACCEL" and not self.inter["ACCEL"] and vec.length(self.ent.vel) < SPD_PLANE_MAX:
