@@ -34,7 +34,7 @@ glMatrixMode(GL_MODELVIEW)
 #glEnable(GL_BLEND)
 #glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-maptex = texture.mapTexture("maps/map1texture.bmp", 64)
+maptex = texture.mapTexture("maps/map1texture.png", 64)
 maptex.gen_lists()
 
 grid = cell.Grid((14, 10), (50, 50))
@@ -208,8 +208,8 @@ while running:
     xoff = (left * texture.mapTexture.texsize)
     yoff = (texture.mapTexture.rows - 1) * texture.mapTexture.texsize
     #print xoff, yoff, left, right
-    
-    # columns, then rows. inconsistent, maybe fix it up later...
+     
+     # columns, then rows. inconsistent, maybe fix it up later...
     i = left
     while i <= right and i < texture.mapTexture.cols:
         j = 0

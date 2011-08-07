@@ -33,6 +33,7 @@ k_flip = pygame.K_PERIOD
 class Control:
     keys = []
     keyevents = []
+    actions_camp = []
     
     def __init__(self, ent):
         self.ent = ent
@@ -126,8 +127,9 @@ class ctlPlane(Control):
             #pbottom = min(pys)
             pvs = nearplayer.vertices()
             pxs = [x for x, _ in pvs]
-            left = min(pxs)
-            right = max(pxs)
+            pys = [y for _, y in pvs]
+            left, right = min(pxs), max(pxs)
+            bottom, top = min(pys), max(pys) 
             
             #print self.ent, self.ent.rot, rotangle
             
@@ -137,6 +139,7 @@ class ctlPlane(Control):
             #else: # close, hard
             #    cmpangle = realangle
                 
+            # latter conditions checks for alignment     
             if self.ent.rot < cmpangle:
                 if cmpangle - self.ent.rot > math.pi:
                     actions.append("ROT_COUNTER")
@@ -147,6 +150,7 @@ class ctlPlane(Control):
                     actions.append("ROT_CLOCK")
                 else:
                     actions.append("ROT_COUNTER")
+                    
                     
             # speed up
             if xdist <= AI_PLANE_SLOW_DIST:
